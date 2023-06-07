@@ -1,0 +1,252 @@
+---
+title: "re_ml_01"
+author: "Raphael Demont"
+output:   
+    html_document:
+    toc: true
+    fig_caption: yes
+date: "2023-05-15"
+---
+
+
+
+# 1 Introduction and loading code
+
+This report exercise focuses on Chapter 10, which covers linear regression and the KNN (K-Nearest Neighbors) model. The objective is to compare these two models and investigate the impact of the parameter k in the KNN model.
+To facilitate the exercise, the required code and libraries are loaded, and the dataset "Daily Fluxes 1997-2014" is imported. The complete code is available in a separate directory within a file named "function.R." To ensure clarity and optimize space, only relevant code snippets needed to solve the exercise will be provided. The loading process, which includes importing libraries and datasets, is not displayed due to its extensive nature. Additionally, there are other files with different code aimed at testing hypotheses in Section 2.
+It was not entirely clear which code should be used in different sections. Consequently, i proceeded with the provided code for fitting and evaluating the linear regression and KNN models. This code is also utilized for Section 3. 
+
+It is possible that the intention was to create a new KNN model, but since we are already covering KNN in Chapter 10 of the AGDS Book,I maintained my work as is, once I realized I might have initially followed the wrong approach.
+
+The dataset utilized in this exercise is the "Daily Fluxes" dataset spanning from 1997 to 2014, containing measurements for each day. This dataset is sourced from the FLUXNET Datasets and is referenced in Section 4.
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+library(tidyverse)
+library(knitr)
+library(ggplot2)
+library(dplyr)
+library(rsample)
+library(caret)
+library(rsample)
+library(recipes)
+
+
+daily_fluxes <- read_csv("C:/Users/rapha/Documents/agds_reprt_RaphaelDemont/FLUXES_DAVOS_1997-2014.csv") 
+
+options(knitr.duplicate.label = "allow")
+
+source("C:/Users/rapha/Documents/agds_reprt_RaphaelDemont/R/newfunction.R")
+source("C:/Users/rapha/Documents/agds_reprt_RaphaelDemont/R/knearing1.R")
+source("C:/Users/rapha/Documents/agds_reprt_RaphaelDemont/R/knearingN.R")
+```
+# 2 Comparison of the linear regression and KNN models
+
+
+In this analysis, we will compare the performance of the linear regression model and the KNN model using the daily fluxes dataset as an example.
+
+## 2.1 Difference between evaluation on the training and test set for KNN and linear regression
+
+The inquiry at hand revolves around understanding the reason behind the greater disparity between the evaluation results on the training and test sets for the KNN model compared to the linear regression model. To address this, we will showcase the performance of both models on the test and training sets, followed by a comprehensive discussion of the obtained outcomes.
+
+
+```{r, echo=FALSE, fig.cap= "Fig.1 Linear regression model"}
+
+
+# linear regression model
+eval_model(mod = mod_lm, df_train = daily_fluxes_train, df_test = daily_fluxes_test)
+```
+
+```{r, fig.cap= "Fig.2 KNN model"}
+#KNN
+eval_model(mod = mod_knn, df_train = daily_fluxes_train, df_test = daily_fluxes_test)
+```
+
+### 2.1.1 Linear Regression
+
+The model exhibits the following performance metrics:
+
+-Training Set: R-squared = 0.67, RMSE = 1.58
+-Test Set: R-squared = 0.67, RMSE = 1.6
+
+The model demonstrates a low bias as it closely aligns with the training set. It can be classified as a linear model, denoted by the equation Y = f(X), which implies a lack of flexibility as it solely relies on a straight line relationship between predictors and targets (Stocker et al.).
+
+
+### 2.1.2 KNN
+The model's performance metrics are as follows:
+
+-Training Set: R-squared = 0.77, RMSE = 1.31
+-Test Set: R-squared = 0.72, RMSE = 1.49
+
+While this model exhibits a slightly higher bias compared to the linear model, it remains within an acceptable range without overfitting. The KNN model relies on identifying the k nearest neighbors to make predictions.
+
+Overall, the KNN model demonstrates better performance, even with a slightly increased bias-variance trade-off that falls within an acceptable range for KNN usage.
+
+The disparity between the two models and their outcomes can be attributed to various characteristics and behaviors. KNN has a tendency to overfit more quickly than linear regression. The complexity of KNN, as explained in Chapter 9.2.4 by Stocker et al., allows it to adapt to patterns in the training data due to its non-linear nature. However, it is more susceptible to noise in observations. The bias-variance trade-off plays a crucial role, where bias reflects how well a model matches the training set, and variance describes the model's variability when trained with different portions of the dataset. Striking the right balance between bias and variance is key for optimal results.
+
+Generalization also plays a significant role in explaining the difference between the models. Linear regression has the ability to generalize well to unseen data by capturing global patterns. On the other hand, KNN relies on local neighbors for making predictions, making it more sensitive to patterns and yielding better performance on the training set. Consequently, generalizing to unseen data poses a greater challenge for the KNN model compared to the linear regression model (Stocker et al.).
+
+
+## 2.2 Model performance KNN vs. linear regression
+
+Why does the KNN model outperform the linear regression model when evaluating on the test set?
+
+Upon analyzing the performance metrics of both models, it becomes evident that the KNN model exhibits superior performance. The KNN model achieves an R-squared value of 0.72 on the test set, surpassing the linear regression model's R-squared value of 0.67. This indicates that the KNN model is better able to capture the underlying patterns and relationships in the data compared to the linear regression model.
+
+Furthermore, examining the RMSE values reveals that the KNN model attains a lower value of 1.49, indicating a smaller average distance between the predicted and actual values. This signifies that the KNN model provides a better fit to the test set data, resulting in improved model performance.
+
+In terms of the bias-variance trade-off, the linear regression model showcases superior performance due to its lower trade-off. However, as previously discussed, the bias-variance trade-off for the KNN model remains within an acceptable range. Consequently, the KNN model exhibits better overall performance compared to the linear regression model.
+
+
+## 2.3 Bias-variance trade-off spectrum KNN vs. linear regression model
+
+Where would you place the KNN and linear regression models on the bias-variance trade-off spectrum?
+
+### 2.3.1 Linear regression
+
+The linear regression model exhibits an R-squared value of 0.67 for both the training and test sets, indicating that approximately 67% of the variance in the target variable is explained by the model. This signifies a reasonable fit to the data.
+
+In terms of the root mean squared error (RMSE), the model yields a value of 1.58 for the training set and 1.6 for the test set. These values suggest a moderate level of error in the predictions, indicating a moderate level of accuracy in predicting the target variable.
+
+Considering the bias-variance trade-off, the linear regression model demonstrates a balanced trade-off between bias and variance. The presence of similar values in both the training and test sets suggests that the model is performing consistently without exhibiting significant overfitting or underfitting tendencies. Thus, there is a moderate level of bias and variance present in the linear regression model, implying a relatively stable performance.
+
+
+### 2.3.2 KNN
+
+The KNN model exhibits an R-squared value of 0.77 for the training set and 0.72 for the test set. This indicates that approximately 77% of the variance in the target variable is explained by the model for the training set, while the explanation decreases slightly to 72% for the test set. Although the model performs better on the training data, it does not show signs of significant overfitting.
+
+In terms of the root mean squared error (RMSE), the KNN model yields a value of 1.31 for the training set and 1.49 for the test set. These values indicate lower errors compared to the linear regression model, suggesting that the KNN model provides better accuracy in predicting the target variable.
+
+Considering the bias-variance trade-off, the KNN model tends to have higher variance and potentially lower bias. This is reflected in the higher R-squared value for the training set, indicating a better fit to the training data, but slightly lower performance on the test set. These characteristics suggest that the KNN model has a tendency to capture more intricate patterns in the training data, which may result in higher variability in predictions.
+
+
+### 2.3.3 Conclusion
+
+To summarize, the linear regression model demonstrates a more balanced trade-off between bias and variance compared to the KNN model. On the other hand, the KNN model exhibits higher variance, potentially indicating lower bias. The KNN model's higher flexibility allows it to capture more intricate patterns in the data.
+
+# 3 Role of k
+
+## 3.1 Hypothesis for k approaching 1 and for k approaching 
+
+Considering the bias-variance trade-off, it is hypothesized that as k approaches 1 in the KNN model, the R-squared and MAE evaluated on both the test and training sets would likely decrease. This is because with a smaller value of k, the model becomes more flexible and sensitive to local patterns in the training data. Consequently, it may overfit the training set and have difficulty generalizing to unseen data, resulting in lower R-squared and potentially higher MAE values.
+
+On the other hand, as k approaches N (the number of observations in the data) in the KNN model, the R-squared and MAE evaluated on both the test and training sets would probably increase. With a larger value of k, the model becomes less flexible and relies on a larger number of neighbors for predictions. This can lead to a smoother and more generalized model, reducing overfitting. As a result, the R-squared and MAE values would likely improve, indicating better model performance in terms of capturing the overall trends and reducing errors.
+
+In summary, decreasing k in the KNN model tends to increase its flexibility and potential for overfitting, while increasing k promotes a smoother and more generalized model with improved performance.
+
+. 
+### 3.1.1 k approaching 1
+
+As k approaches 1 in the KNN model, the model becomes highly sensitive to individual data points, leading to higher variance. This increased sensitivity can result in a higher R-squared value on the training set, as the model fits the training data more closely. However, it also increases the risk of overfitting, causing the R-squared value on the test set to decrease. With fewer nearest neighbors considered, the model becomes heavily reliant on individual data points, potentially limiting its ability to generalize well to unseen data.
+
+Additionally, the Mean Absolute Error (MAE) would likely decrease on the training set as the model fits individual data points more precisely. However, on the test set, the MAE would tend to increase due to the model's reduced ability to generalize effectively, resulting in higher errors.
+
+In summary, as k approaches 1, the KNN model exhibits higher variance and lower bias, increasing the risk of overfitting and reducing its generalization performance.
+
+### 3.1.2 k approaching N
+
+As k approaches the total number of observations (N) in the dataset, the KNN model becomes less sensitive to individual data points and instead focuses on the overall patterns in the data. This results in a decrease in the R-squared value for both the test and training sets, indicating a lower level of variance in the predictions.
+
+The Mean Absolute Error (MAE) will increase for both the training and test sets as k approaches N. With a higher value of k, the model considers a larger number of neighbors, which can introduce more errors in the predictions.
+
+In general, approaching N as the value of k leads to lower variance but higher bias in the model. This suggests an underfitting scenario, where the model may not capture the complexity of the data and exhibit limited predictive performance.
+
+## 3.2 Test hypothesis
+
+I conducted an experiment to test this hypothesis by utilizing a provided code snippet and modifying the k values. However, I encountered difficulties in creating my own code as a function that could accept k as an input and output the Mean Absolute Error (MAE).
+
+### 3.2.1 k approaching 1
+
+```{r, echo = FALSE, fig.cap= "Fig.3 k = 8"}
+
+eval_model(mod = mod_knn_8, df_train = daily_fluxes_train, df_test = daily_fluxes_test)
+```
+
+```{r, echo = FALSE, fig.cap = "Fig.4 k = 4"}
+eval_model(mod = mod_knn_4, df_train = daily_fluxes_train, df_test = daily_fluxes_test)
+```
+
+```{r, echo = FALSE, fig.cap = "Fig.5 k = 2"}
+eval_model(mod = mod_knn_2, df_train = daily_fluxes_train, df_test = daily_fluxes_test)
+```
+
+```{r, echo = FALSE, fig.cap = "Fig.6 k = 1"}
+eval_model(mod = mod_knn_1, df_train = daily_fluxes_train, df_test = daily_fluxes_test)
+
+```
+Consistent with the hypothesis, as k approaches 1, the R-squared value increases for the training set while decreases for the test set.
+
+In the test set, the RMSE decreases as k approaches 1. Conversely, in the training set, the RMSE increases.
+
+Figure 5 visually demonstrates underfitting in the training set and overfitting in the test set.
+
+### 3.2.2 k approaching N
+
+```{r, echo = FALSE, fig.cap = "Fig.5 k = 100"}
+eval_model(mod = mod_knn_100, df_train = daily_fluxes_train, df_test = daily_fluxes_test)
+
+```
+
+
+As observed in this analysis, when comparing it to Figure 3 with k = 8, the R-squared value has shown a decline, while the RMSE value has demonstrated an increase. These findings align with the predictions stated in our hypothesis.
+
+
+---->(Unfortunately, I can not go above k = 100, R Studio will shut down and the R Markdown file can not be rendered. It would be interesting to see values of 500, 1000 and even 6574 of k, and how this behaves. But this is impossible for my computer.)
+
+## 3.3 Optimal k
+
+```{r}
+mod_cv <- caret::train(pp,
+                       data = daily_fluxes_train |> drop_na(),
+                       method = "knn",
+                       trcontrol = caret::trainControl(method = "cv", number = 
+                       10),
+                       tuneGrid = data.frame(k = c(2,5,10,25,30,35,40,60,100)),
+                       metric = "MAE")
+
+print(mod_cv)
+
+
+mod_cv <- caret::train(pp,
+                      data = daily_fluxes_train |> drop_na(),
+                      method = "knn",
+                      trConrol = caret::trainControl(method = "cv", number = 
+                      10),
+                      tunegrid = data.frame(k = c(23,24,25,26,27,28,29,30,31,
+                      32)),
+                      metric = "MAE")
+
+print(mod_cv)
+```
+
+
+```{r}
+
+# Replace non-positive values with median
+daily_fluxes_train$TA_F <- ifelse(daily_fluxes_train$TA_F <= 0, median(daily_fluxes_train$TA_F, na.rm = TRUE), daily_fluxes_train$TA_F)
+
+mod_knn_optimal <- caret::train(
+  pp, 
+  data = daily_fluxes_train |> drop_na(), 
+  method = "knn",
+  trControl = caret::trainControl(method = "cv", number = 10),
+  tuneGrid = data.frame(k = c(2,5,10,15,25,30,35,40,60,
+  100)),
+  metric = "MAE"
+  
+)
+print(mod_knn_optimal)
+ggplot(mod_knn_optimal)
+
+```
+
+According to the elbow-method we choose k=25, which results in the best trade-off between complexity and generalisability.
+
+
+# 4 References
+
+Stocker Benjamin, Hufkens Koen, Arán Pepa, Schneider Pascal. Chapter 9 Supervised Machine Learning I | Applied Geodata Science. 3 Apr. 2023, geco-bern.github.io/agds/supervisedmli.html#comparison-of-the-linear-regression-and-knn-models.
+
+FLUXNET2015: CC-BY-4.0 License, DOI: https://doi.org/10.18140/FLX/1440134

@@ -1,0 +1,98 @@
+---
+title: "re_stepwise"
+author: "Raphael Demont"
+date: "2023-05-03"
+output: html_document
+---
+
+### Introduction
+
+In this report exercise, our aim is to construct a stepwise forward regression model to understand the relationship between gross primary production (GPP) and the predictors present in the dataset of half-hourly ecosystem fluxes. GPP refers to the total amount of CO2 captured by terrestrial plants within a given time period.
+
+To begin, we start by loading the necessary libraries and importing the dataset, which is in a .csv format. By reviewing the dataset specifications, we can identify the available predictor variables. In the subsequent step, we define the response variable (GPP) and select the appropriate predictor variables for our analysis.
+
+
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+```
+```{r}
+
+half_hour_fluxes <- read_csv("vignettes/df_for_stepwise_regression.csv")
+spec(half_hour_fluxes)
+
+
+response <- half_hour_fluxes$GPP_NT_VUT_REF
+predictors <- c("TA_F", "SW_IN_F", "LW_IN_F", "VPD_F", "PA_F", "P_F", "WS_F", "TA_F_MDS", "SW_IN_F_MDS", "LW_IN_F_MDS", "VPD_F_MDS", "CO2_F_MDS", "PPFD_IN", "USTAR")
+print(predictors)
+```
+
+### Evaluation of all bivariate models (single predictor)
+
+In this analysis, we perform a sequential regression by individually considering each predictor variable without combining them. To accomplish this, an empty vector and a for-loop to calculate the R-squared value is utilized for each predictor/response variable. Subsequently, the predictor variable with the highest R-squared value and conduct a linear regression to obtain the AIC (Akaike Information Criterion) and the name of the variable is selected. In this particular case, the variable identified is PPFD_IN, which represents the photosynthetic photon flux density.
+
+
+
+```{r}
+r_2_values <- c()
+for (predictor in predictors) {
+  formel <- formula(paste("GPP_NT_VUT_REF ~", predictor))
+  model <- lm(formel, data = half_hour_fluxes)
+  summary_model <- summary(model)
+  print(summary_model)
+  r_squared <- summary_model$r.squared
+  r_2_values <- c(r_2_values, r_squared)
+  print(r_2_values)
+}
+
+
+
+
+best_r_two <- which.max(r_2_values)
+best_name <- predictors[best_r_two]
+best_formel <- formula(paste("GPP_NT_VUT_REF ~", best_name))
+best_model <- lm(best_formel, data = half_hour_fluxes)
+best_aic <- AIC(best_model)
+print(r_2_values)
+cat("Lowest AIC:", best_aic, 
+    "Variable:", best_name)
+
+
+```
+
+
+
+#increase to p + 1
+```{r}
+response <- half_hour_fluxes$GPP_NT_VUT_REF
+predictors <- c("TA_F", "SW_IN_F", "LW_IN_F", "VPD_F", "PA_F", "P_F", "WS_F", "TA_F_MDS", "SW_IN_F_MDS", "LW_IN_F_MDS", "VPD_F_MDS", "CO2_F_MDS", "PPFD_IN", "USTAR")
+
+small_aic <- Inf
+best_modell <- NULL
+
+for (i in 1:14) {
+     combinations <- combn(predictors, i)
+      print(combinations)
+     for (j in 1:ncol(combinations)){
+       formel_all_p <- formula(paste("GPP_NT_VUT_REF ~", paste(combinations[,j], collapse = "+")))
+       modell_lm <- lm(formel_all_p, data = half_hour_fluxes)
+       aic <- AIC(modell_lm)
+       if (aic < small_aic){
+         small_aic <- aic
+         best_modell <- modell_lm
+       } else {
+         break
+     }
+    }
+  }
+
+summary(best_modell)
+print(small_aic)
+
+```

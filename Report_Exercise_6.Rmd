@@ -1,0 +1,100 @@
+---
+title: "Report_Exercise_6"
+author: "Raphael Demont"
+output: 
+  html_document:
+  toc: true 
+  fig_caption: yes  
+date: "2023-05-21"  
+
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(rsample)
+library(caret)
+library(rsample)
+library(recipes)
+library(cowplot)
+
+
+daily_fluxes_davos <- read_csv("C:/Users/rapha/Documents/agds_reprt_RaphaelDemont/FLUXES_DAVOS_1997-2014.csv")
+daily_fluxes_lae <- read_csv("C:/Users/rapha/Documents/agds_reprt_RaphaelDemont/FLUXES_LAEGERN_2004-2014.csv")
+
+options(knitr.duplicate.label = "allow")
+
+source("C:/Users/rapha/Documents/agds_reprt_RaphaelDemont/R/RCode_RepEx_6.R")
+
+```
+
+
+
+```{r, echo=FALSE, fig.cap = "Fig.1 Davos within-Site"}
+
+print(davos_within_site)
+
+```
+
+
+```{r, echo=FALSE, fig.cap = "Fig.2 Davos across-Site"}
+
+print(laegern_across_site)
+
+```
+
+
+
+```{r, echo=FALSE, fig.cap = "Fig.2 Laegern within-Site"}
+
+print(laegern_within_site)
+
+```
+
+
+```{r, echo=FALSE, fig.cap = "Fig.2 Laegern across-Site"}
+
+print(laegern_across_site)
+
+```
+
+
+```{r, echo=FALSE, fig.cap = "Fig.2 Laegern across-Both"}
+
+print(laegern_across_both)
+
+```
+
+
+```{r, echo=FALSE, fig.cap = "Fig.2 Davos across-Both"}
+
+print(laegern_across_both)
+
+```
+
+# Discussion
+
+
+In summary, the prediction accuracy was significantly higher for Davos compared to Laegern, even when considering within-site predictions. The poorest performance was observed in the across-site predictions, which is expected as the model was trained without any data from the predicted site. Notably, the predictions for Davos exhibited identical quality, indicated by the R-squared and RMSE values, whether considering within-site or across-site scenarios. To explain these differences and similarities, an examination of the site features is necessary.
+
+
+The Seehornwald Davos research site is located at an altitude of 1639 meters in the Swiss Alps. It consists of a subalpine coniferous forest dominated by Norway spruce trees, with an average height of 18 meters and a leaf area index of 4 m2 m-2. The understorey vegetation mainly includes dwarf shrubs like Vaccinium myrtillus and Vaccinium gaulterioides, as well as mosses. The site offers long-term measurements of regional climate, CO2 and microclimate profiles, tree physiological records, turbulent fluxes, atmospheric concentrations, and vegetation and soil properties. It is an ideal location for studying climate change effects on tree adaptation and ecosystem carbon balance. The research site has a high forest management system with minimal thinning activities, and the climate at the site has a mean annual temperature of 4.3°C and an average annual precipitation of 1020 mm.
+
+The research site at Lägeren is located on the steep slopes of the Lägeren mountain in the Swiss Plateau, at an altitude of 800 meters above sea level. It consists of a highly diverse mixed deciduous mountain forest dominated by beech and fir trees. The site is part of the CarboEurope IP network, the NABEL air quality network, and the long-term forest ecosystem research site (LWF) of the WSL. Eddy covariance flux measurements have been conducted since April 2004. The climate in the area is characterized by an average annual temperature of 8.6°C, with the warmest years being 2018 and 2020. The site has rendzic leptosols and haplic cambisols as the main soil types and is managed as a high forest with a forest reserve silvicultural system.
+
+
+Davos and Lägeren research sites in Switzerland differ in terms of location, altitude, vegetation, and climate. Davos is situated in the Swiss Alps at an altitude of 1639 meters, while Lägeren is located on the Swiss Plateau at 800 meters above sea level. Davos has a coniferous forest dominated by spruce trees, while Lägeren features a diverse mixed forest dominated by beech and fir trees. The average annual temperature at Davos is 4.3°C, while Lägeren experiences an average annual temperature of 8.6°C. These distinct characteristics provide valuable opportunities for studying forest ecology, carbon balance, and climate change impacts in different geographical and altitudinal contexts within Switzerland.
+
+The proximity of Laegern to larger cities compared to Davos may have contributed to the difference in air quality predictions. The inputs related to air quality can vary significantly in areas closer to urban centers. To fully explain the observed prediction performance, a detailed analysis of the site-specific features during the time the data was generated would be required. Although predicting across different sites is an interesting approach, it may be more beneficial for the project to focus on predictions within the system boundaries of interest. Allocating time and resources to improving within-site predictions could yield more fruitful outcomes.
+
+
+Literature: https://www.swissfluxnet.ethz.ch/index.php/sites/ch-lae-laegeren/site-info-ch-lae/ ; https://www.swissfluxnet.ethz.ch/index.php/sites/ch-dav-davos/site-info-ch-dav/
+
+
+
+
+

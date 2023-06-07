@@ -1,0 +1,98 @@
+---
+title: "re_tidy"
+author: "Raphael Demont"
+date: "2023-03-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Loading Data and redefining variable
+
+I import the required packages for this report task.
+
+I manually made the data cleaning process on the .csv file, eliminating any irrelevant information.
+
+By utilizing the read_csv2() function, I successfully loaded the .csv file that utilized semicolons as a delimiter. Upon examination, it became necessary to convert the "time" variable from a character type to a numeric type, as it will be used for future operations. I verify the success of this conversion using the is.numeric command to confirm that the "time" variable is now numeric.
+
+
+
+
+```{r read data}
+
+library(tidyverse)
+library(readr)
+library(dplyr)
+
+Database_S1 <- read_csv2("vignettes/Report_CSV.csv"
+)
+Database_S1_head <- head(Database_S1, n = 3)
+Database_S1_head
+
+Database_S1 <- Database_S1 %>% mutate(time = as.numeric(time))
+is.numeric(Database_S1$time)
+
+
+group_S1 <- group_by(Database_S1, experiment)
+group_S1
+
+#now the data grouped into the differnet 53 experiments
+
+```
+
+
+## Calculate log-response-ratio 
+
+Next, it is possible to compute the logarithmic response for every row in the csv file and incorporate it into the dataset using the mutate() function. However, this is not our desired outcome. Our objective is to obtain a single log-response-ratio for each experiment, resulting in a total of only 53 log-response-ratios. To achieve this, we can employ the summarize() function to summarize the rows for each experiment and calculate the average log-response-ratio, which is the desired outcome.
+
+
+
+```{r}
+group_S1_RR <- mutate(group_S1, RR = log(co2_increased_mean / co2_ambient_mean))
+group_S1_RR
+
+summary_data <- summarize(group_S1_RR, mean_log_ratio = mean(log(co2_increased_mean / co2_ambient_mean)))
+knitr::kable(summary_data)
+```
+
+## Aggregtae data into three times phases
+
+At this stage, we consolidate the data from all experiments and divide it into three distinct time periods:
+
+The early phase, encompassing the period of less than three years since the start.
+The middle phase, spanning from three to six years since the start.
+The late phase, comprising the period exceeding six years since the start.
+Subsequently, the log-response-ratio is recalculated, and the resulting file is renamed as "Database_S1_RR."
+
+
+```{r}
+Database_S1_RR <- mutate(Database_S1, RR = log(co2_increased_mean / co2_ambient_mean))
+Database_S1_RR
+```
+
+##Creating phase column
+
+
+To group the data based on the number of years, a new column called "Phase" is created. The data is divided into three distinct phases: "Early," "Mid," and "Late." This categorization is achieved using the cut() function, which sets breakpoints at 0, 3, 6, and infinity based on the "time" column. These breakpoints are then labeled as Early, Mid, and Late.
+
+This grouping allows me to calculate the average log-ratio for each phase, resulting in three log-response-ratios, each representing a specific phase. To provide an example of the data after applying the cut() function, I display the first three rows of the dataset. As you can see, the last column now indicates the "Phase," with the first three experiments falling within the early phase.
+
+```{r}
+Database_S1_RR$Phase <- cut(Database_S1_RR$time, breaks = c(0, 3, 6, Inf), 
+                       labels = c("Early", "Mid", "Late"), 
+                       include.lowest = TRUE)
+Database_S1_RR
+Database_S1_RR_head <- head(Database_S1_RR, n = 3)
+knitr::kable(Database_S1_RR_head)
+
+
+mean_RR_by_phase <- tapply(Database_S1_RR$RR, Database_S1_RR$Phase, mean)
+mean_RR_by_phase
+```
+
+
+
+####
